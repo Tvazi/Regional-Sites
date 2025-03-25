@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Regional Office Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 80vh; }
+        #company-dropdown { margin: 20px; }
+    </style>
+</head>
+<body>
+<h2>Select a company to view locations</h2>
+<select id="company-dropdown">
+    <option value="all">All Companies</option>
+    <option value="Accenture">Accenture</option>
+    <option value="AG">AG</option>
+    <option value="BNYM">BNYM</option>
+    <option value="Brown Shipley">Brown Shipley</option>
+    <option value="Deloitte">Deloitte</option>
+    <option value="JPMC">JPMC</option>
+    <option value="Morgan Stanley">Morgan Stanley</option>
+    <option value="NRF">NRF</option>
+    <option value="RNT">RNT</option>
+    <option value="KPMG">KPMG</option>
+    <option value="WTW">WTW</option>
+</select>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([54.5, -3], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+    const locations = {
+        "Accenture": [
+            ["Manchester", 53.483959, -2.244644],
+            ["Edinburgh", 55.953251, -3.188267],
+            ["Glasgow", 55.864237, -4.251806],
+            ["Birmingham", 52.486244, -1.890401],
+            ["Cheltenham", 51.899385, -2.078253],
+            ["Leeds", 53.800755, -1.549077],
+            ["Newcastle", 54.978252, -1.617439],
+            ["Bristol", 51.454514, -2.587910]
+        ],
+        "AG": [
+            ["Glasgow", 55.864237, -4.251806],
+            ["Aberdeen", 57.149651, -2.099075],
+            ["Edinburgh", 55.953251, -3.188267],
+            ["Manchester", 53.483959, -2.244644],
+            ["Leeds", 53.800755, -1.549077]
+        ],
+        "BNYM": [
+            ["Manchester", 53.483959, -2.244644],
+            ["Edinburgh", 55.953251, -3.188267],
+            ["Dublin", 53.349805, -6.260310],
+            ["Cork", 51.898514, -8.475603],
+            ["Wexford", 52.336916, -6.462545]
+        ],
+        "Brown Shipley": [
+            ["Cambridge", 52.205337, 0.121817],
+            ["Nottingham", 52.954783, -1.158109],
+            ["Manchester", 53.483959, -2.244644]
+        ],
+        "Deloitte": [
+            ["Aberdeen", 57.149651, -2.099075],
+            ["Glasgow", 55.864237, -4.251806],
+            ["Edinburgh", 55.953251, -3.188267],
+            ["Leeds", 53.800755, -1.549077],
+            ["Manchester", 53.483959, -2.244644],
+            ["Birmingham", 52.486244, -1.890401],
+            ["Cambridge", 52.205337, 0.121817],
+            ["Reading", 51.454264, -0.978130],
+            ["Bristol", 51.454514, -2.587910],
+            ["Cardiff", 51.481583, -3.179090],
+            ["Belfast", 54.597285, -5.930120],
+            ["Isle of Man", 54.236107, -4.548056],
+            ["Jersey", 49.214439, -2.131250]
+        ],
+        "JPMC": [
+            ["Bournemouth", 50.719164, -1.880769]
+        ],
+        "Morgan Stanley": [
+            ["Glasgow", 55.864237, -4.251806]
+        ],
+        "NRF": [
+            ["Newcastle", 54.978252, -1.617439]
+        ],
+        "RNT": [
+            ["Manchester", 53.483959, -2.244644],
+            ["Scotland", 56.490671, -4.202646]
+        ],
+        "KPMG": [
+            ["Manchester", 53.483959, -2.244644],
+            ["Leeds", 53.800755, -1.549077],
+            ["Reading", 51.454264, -0.978130],
+            ["Cardiff", 51.481583, -3.179090],
+            ["Birmingham", 52.486244, -1.890401],
+            ["Newcastle", 54.978252, -1.617439],
+            ["Edinburgh", 55.953251, -3.188267],
+            ["Glasgow", 55.864237, -4.251806],
+            ["Aberdeen", 57.149651, -2.099075],
+            ["Bristol", 51.454514, -2.587910],
+            ["Nottingham", 52.954783, -1.158109],
+            ["Liverpool", 53.408371, -2.991573]
+        ],
+        "WTW": [
+            ["Manchester", 53.483959, -2.244644],
+            ["Leeds", 53.800755, -1.549077],
+            ["Birmingham", 52.486244, -1.890401],
+            ["WGC", 51.804028, -0.208731],
+            ["Reigate", 51.237084, -0.205823]
+        ]
+    };
+
+    const colors = {
+        "Accenture": "purple",
+        "AG": "green",
+        "BNYM": "yellow",
+        "Brown Shipley": "blue",
+        "Deloitte": "orange",
+        "JPMC": "purple",
+        "Morgan Stanley": "cyan",
+        "NRF": "magenta",
+        "RNT": "lime",
+        "KPMG": "pink",
+        "WTW": "teal"
+    };
+
+    const markers = {};
+
+    function updateMap(company) {
+        // Clear previous markers
+        Object.values(markers).forEach(layer => map.removeLayer(layer));
+
+        // Add markers for the selected company
+        if (company === "all") {
+            Object.entries(locations).forEach(([company, locationsList]) => {
+                markers[company] = L.layerGroup().addTo(map);
+                locationsList.forEach(([city, lat, lng]) => {
+                    L.circleMarker([lat, lng], {
+                        radius: 8,
+                        color: colors[company],
+                        fillColor: colors[company],
+                        fillOpacity: 0.8
+                    }).addTo(markers[company]).bindPopup(`<b>${company}</b><br>${city}`);
+                });
+            });
+        } else {
+            markers[company] = L.layerGroup().addTo(map);
+            locations[company].forEach(([city, lat, lng]) => {
+                L.circleMarker([lat, lng], {
+                    radius: 8,
+                    color: colors[company],
+                    fillColor: colors[company],
+                    fillOpacity: 0.8
+                }).addTo(markers[company]).bindPopup(`<b>${company}</b><br>${city}`);
+            });
+        }
+    }
+
+    document.getElementById('company-dropdown').addEventListener('change', function() {
+        updateMap(this.value);
+    });
+
+    // Initial map load
+    updateMap('all');
+</script>
+</body>
+</html>
